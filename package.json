@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Find the shortest path between two squares for a knight",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -19,5 +20,8 @@
   "devDependencies": {
     "@eslint/js": "^9.1.1",
     "eslint": "^9.1.1"
+  },
+  "dependencies": {
+    "@shamblonaut/js-hash-map": "^1.0.0"
   }
 }
