@@ -20,8 +20,5 @@
   "devDependencies": {
     "@eslint/js": "^9.1.1",
     "eslint": "^9.1.1"
-  },
-  "dependencies": {
-    "@shamblonaut/js-hash-map": "^1.0.0"
   }
 }
