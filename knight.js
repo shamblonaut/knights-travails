@@ -1,6 +1,14 @@
 import { Node } from "./node.js";
 import { Queue } from "./queue.js";
 
+function indexToSquare(index) {
+  return [Math.floor(index / 8), index % 8];
+}
+
+function squareToIndex(square) {
+  return square[0] * 8 + square[1];
+}
+
 export class Knight {
   #relativeDestinations = [
     [2, 1],
@@ -13,10 +21,48 @@ export class Knight {
     [2, -1],
   ];
 
+  #graph = [];
+
   #searchQueue = new Queue();
   #scannedSquares = [];
 
   // scans = 0;
+
+  constructor() {
+    for (let i = 0; i < 64; i++) {
+      const destinations = [];
+      for (const relativeDestination of this.#relativeDestinations) {
+        if (
+          this.#isValidDestination(
+            [Math.floor(i / 8), i % 8],
+            relativeDestination,
+          )
+        ) {
+          destinations.push(
+            i + relativeDestination[0] * 8 + relativeDestination[1],
+          );
+        }
+      }
+      this.#graph.push(destinations);
+    }
+  }
+
+  printGraph() {
+    console.log(this.#graph);
+  }
+
+  #isValidDestination(startSquare, destinationSquare) {
+    const destination = [
+      startSquare[0] + destinationSquare[0],
+      startSquare[1] + destinationSquare[1],
+    ];
+    return (
+      destination[0] >= 0 &&
+      destination[0] <= 7 &&
+      destination[1] >= 0 &&
+      destination[1] <= 7
+    );
+  }
 
   #isValidSquare(square) {
     return square[0] >= 0 && square[0] <= 7 && square[1] >= 0 && square[1] <= 7;
@@ -30,39 +76,33 @@ export class Knight {
       console.error("Invalid end square");
     }
 
-    this.#searchQueue.queue(new Node(startSquare, []));
+    this.#searchQueue.queue(new Node(squareToIndex(startSquare), []));
 
     while (!this.#searchQueue.empty()) {
       const destination = this.scanDestinations(
         this.#searchQueue.dequeue(),
-        endSquare,
+        squareToIndex(endSquare),
       );
-      if (destination) return [...destination.path, destination.value];
+      if (destination) {
+        this.#scannedSquares = [];
+        return [...destination.path, destination.value];
+      }
     }
   }
 
-  scanDestinations(node, endSquare) {
-    const destinations = this.#relativeDestinations.map((destination) => {
-      return new Node(
-        [destination[0] + node.value[0], destination[1] + node.value[1]],
-        [...node.path, node.value],
-      );
-    });
+  scanDestinations(node, endIndex) {
+    const destinations = this.#graph[node.value].map(
+      (destination) => new Node(destination, [...node.path, node.value]),
+    );
 
     for (const destination of destinations) {
-      if (!this.#isValidSquare(destination.value)) continue;
-
-      if (this.#scannedSquares[destination.value[0] * destination.value[1]]) {
+      if (this.#scannedSquares[destination.value]) {
         continue;
       }
-
-      this.#scannedSquares[destination.value[0] * destination.value[1]] = true;
+      this.#scannedSquares[destination.value] = true;
       // this.scans++;
 
-      if (
-        destination.value[0] === endSquare[0] &&
-        destination.value[1] === endSquare[1]
-      ) {
+      if (destination.value === endIndex) {
         return destination;
       }
 
@@ -72,8 +112,8 @@ export class Knight {
 
   printPath(path) {
     console.log(
-      `You made it from ${path[0]} to ${path[path.length - 1]} in ${path.length - 1} moves! Here's your path:`,
+      `You made it from ${indexToSquare(path[0])} to ${indexToSquare(path[path.length - 1])} in ${path.length - 1} moves! Here's your path:`,
     );
-    path.forEach((square) => console.log(square));
+    path.forEach((index) => console.log(indexToSquare(index)));
   }
 }
